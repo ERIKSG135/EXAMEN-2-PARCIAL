@@ -1,0 +1,200 @@
+﻿@page "/listado-de-productos"
+@rendermode InteractiveServer
+@using ProductosEx.Data
+
+<h3>Productos</h3>
+
+<EditForm Model="productoActual" FormName="formProductos" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    @if (mostrarAlerta)
+    {
+        <div class="alert alert-danger" role="alert">
+            El número de inventario se encuentra registrado. Debe ser único.
+        </div>
+    }
+    <div class="form-group mb-4">
+        <label for="inventario">Inventario</label>
+        <div>
+            <InputNumber class="form-control" id="inventario" @bind-Value="productoActual.Id" />
+            <ValidationMessage For="@(()=>productoActual.Id)" />
+        </div>
+    </div>
+    <div class="form-group mb-4">
+        <label for="nombre">Nombre</label>
+        <div>
+            <InputText class="form-control" id="nombre" @bind-Value="productoActual.Nombre" />
+            <ValidationMessage For="@(()=>productoActual.Nombre)" />
+        </div>
+    </div>
+    <div class="form-group mb-4">
+        <label>Departamento</label>
+        <div>
+            <InputRadioGroup class="form-control" id="frutas" @bind-Value="productoActual.Departamento">
+                <InputRadio class="form-check-input"
+                            id="frutas"
+                            Value="@("Frutas")" />
+                <label for="rdbFrutas"
+                       class="form-check-inline">Frutas</label>
+            </InputRadioGroup>
+            <InputRadioGroup class="form-control" id="verd" @bind-Value="productoActual.Departamento">
+                <InputRadio class="form-check-input"
+                            id="verd"
+                            Value="@("Verduras")" />
+                <label for="rdbFrutas"
+                       class="form-check-inline">Verduras</label>
+            </InputRadioGroup>
+            <InputRadioGroup class="form-control" id="lacteos" @bind-Value="productoActual.Departamento">
+                <InputRadio class="form-check-input"
+                            id="lacteos"
+                            Value="@("Lácteos")" />
+                <label for="rdbFrutas"
+                       class="form-check-inline">Lácteos</label>
+            </InputRadioGroup>
+            <ValidationMessage For="@(()=>productoActual.Departamento)" />
+        </div>
+    </div>
+    @if (modoEdicion)
+    {
+        <button type="submit" class="btn btn-outline-success mb-3">Actualizar</button>
+        <button type="button" class="btn btn-outline-danger mb-3" @onclick="CancelarEdit">Cancelar</button>
+    }
+    else
+    {
+        <button type="submit" class="btn btn-primary mb-3">Guardar</button>
+    }
+</EditForm>
+@if (modoListado)
+{
+    <button type="button" class="btn btn-secondary mb-3" @onclick="() => modoListado = false">Existencias</button>
+}
+else
+{
+    <button type="submit" class="btn btn-secondary mb-3" @onclick="() => modoListado = true">Listado</button>
+}
+
+@if (listadoProductos.Any())
+{
+    @if (modoListado)
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Inventario</th>
+                    <th>Nombre</th>
+                    <th>Departamento</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in listadoProductos)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Nombre</td>
+                        <td>@item.Departamento</td>
+                        <td>
+                            <button class="btn  btn-sm" @onclick="() => EliminarProducto(item)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-sm" @onclick="() => EditarProducto(item.Id)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Frutas</th>
+                    <th>Verduras</th>
+                    <th>Lácteos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@listadoProductos.Count(p => p.Departamento == "Frutas")</td>
+                    <td>@listadoProductos.Count(p => p.Departamento == "Verduras")</td>
+                    <td>@listadoProductos.Count(p => p.Departamento == "Lácteos")</td>
+                </tr>
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private List<Producto> listadoProductos = new List<Producto>();
+    private Producto productoActual = new Producto();
+    private bool mostrarAlerta = false;
+    private bool modoEdicion = false;
+    private bool modoListado = true;
+    private int idEdicion;
+
+    void Guardar()
+    {
+        if (!modoEdicion)
+        {
+            if (listadoProductos.Any(p => p.Id == productoActual.Id))
+            {
+                mostrarAlerta = true;
+            }
+            else
+            {
+                listadoProductos.Add(productoActual);
+                productoActual = new Producto();
+                mostrarAlerta = false;
+                modoEdicion = false;
+            }
+        }
+        else
+        {
+            if (listadoProductos.Any(p => p.Id == productoActual.Id && p.Id != idEdicion))
+            {
+                mostrarAlerta = true;
+            }
+            else
+            {
+                Producto productoAux = listadoProductos.Where(x => x.Id == idEdicion).First();
+                productoAux.Nombre = productoActual.Nombre;
+                productoAux.Departamento = productoActual.Departamento;
+                productoAux.Id = productoActual.Id;
+                productoActual = new Producto();
+                mostrarAlerta = false;
+                modoEdicion = false;
+            }
+        }
+    }
+
+    void EliminarProducto(Producto producto)
+    {
+        listadoProductos.Remove(producto);
+    }
+
+    void EditarProducto(int id)
+    {
+        mostrarAlerta = false;
+        modoEdicion = true;
+        Producto productoAux = listadoProductos.Where(x => x.Id == id).First();
+        productoActual.Id = productoAux.Id;
+        productoActual.Nombre = productoAux.Nombre;
+        productoActual.Departamento = productoAux.Departamento;
+        idEdicion = id;
+    }
+
+    void CancelarEdit()
+    {
+        productoActual = new Producto();
+        mostrarAlerta = false;
+        modoEdicion = false;
+    }
+
+}
